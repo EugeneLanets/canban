@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useDrop } from 'react-dnd';
+import { throttle } from 'throttle-debounce-ts';
 import AddNewItem from './AddNewItem';
 import { ColumnContainer, ColumnTitle } from './style';
 import { useAppState } from './state/AppStateContext';
@@ -22,7 +23,7 @@ const Column = ({ text, id, isPreview }: ColumnProps) => {
 
   const [, drop] = useDrop({
     accept: 'COLUMN',
-    hover() {
+    hover: throttle(200, () => {
       if (!draggedItem) {
         return;
       }
@@ -33,7 +34,7 @@ const Column = ({ text, id, isPreview }: ColumnProps) => {
 
         dispatch(moveList(draggedItem.id, id));
       }
-    },
+    }),
   });
 
   drag(drop(ref));
@@ -46,7 +47,12 @@ const Column = ({ text, id, isPreview }: ColumnProps) => {
     >
       <ColumnTitle>{text}</ColumnTitle>
       {tasks.map((task) => (
-        <Card text={task.text} id={task.id} key={task.id} />
+        <Card
+          text={task.text}
+          id={task.id}
+          columnId={id}
+          key={task.id}
+        />
       ))}
       <AddNewItem
         toggleButtonText="+ Add another card"
